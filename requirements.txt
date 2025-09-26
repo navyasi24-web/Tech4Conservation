@@ -1,6 +1,6 @@
 streamlit
-tensorflow
-pillow
+tensorflow==2.13.0
 numpy
-matplotlib
+Pillow
 gdown
+matplotlib
