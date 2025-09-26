@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from PIL import Image
 import gdown
 import os
@@ -17,7 +18,7 @@ def download_model_from_drive(file_id, output_path, name):
 
 # ====== Replace these with your actual Google Drive file IDs ======
 cnn_file_id = "1YLRXJyc8jL7vDGIQ_HslUD6IeoRxUqoH"           # <-- your CNN .h5 file ID
-mobilenet_file_id = "1YfhrMLJ0eqyyJPu1mezW7O4jUg7TuhSN"  # <-- your MobileNetV2 .h5 file ID
+mobilenet_file_id = "1YfhrMLJ0eqyyJPu1mezW7O4jUg7TuhSN"      # <-- your MobileNetV2 .h5 file ID
 
 # Paths where the models will be saved locally
 cnn_model_path = "seed_shape_model.h5"
@@ -54,14 +55,15 @@ if uploaded_file is not None:
     else:
         img_resized = image_data.resize((227, 227))
 
-    img_array = np.array(img_resized) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
+    img_array = np.array(img_resized).astype("float32")
 
-    # Predict
+    # Preprocess based on model
     if model_option == 'MobileNetV2':
-        prediction = mobilenet_model.predict(img_array)[0]
+        img_array = preprocess_input(img_array)
+        prediction = mobilenet_model.predict(np.expand_dims(img_array, axis=0))[0]
     else:
-        prediction = cnn_model.predict(img_array)[0]
+        img_array = img_array / 255.0
+        prediction = cnn_model.predict(np.expand_dims(img_array, axis=0))[0]
 
     # Top prediction
     top_class = class_names[np.argmax(prediction)]
